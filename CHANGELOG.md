@@ -8,17 +8,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
-- Initial project setup
-- Project documentation (README, LICENSE, CHANGELOG)
+- Initial project structure
+- SMS webhook endpoint (responds "world" to any incoming message)
+- CONTEXT.md for development state tracking
+- CHANGELOG.md for release tracking
 - AGPL-3.0 license
-- .gitignore for Go projects and development context
-
-## [0.1.0] - 2025-02-17
-
-### Added
-- Initial repository creation
-- Project vision and architecture documentation
-
----
-
-**Note**: Feature-specific changes are tracked in individual branches. This CHANGELOG tracks the main branch only.

@@ -1,0 +1,15 @@
+# ngrok configuration for nascent-nexus SMS webhook
+# 
+# Usage:
+#   ngrok http 8080 --config=ngrok.yml
+#
+# This will create a secure tunnel to your local server at localhost:8080
+# The ngrok URL (e.g., https://abc123.ngrok.io) should be used as the
+# Twilio webhook URL with /sms appended (e.g., https://abc123.ngrok.io/sms)
+
+version: "2"
+tunnels:
+  nascent-nexus:
+    proto: http
+    addr: 8080
+    bind_tls: true
