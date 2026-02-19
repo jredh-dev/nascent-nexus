@@ -17,6 +17,7 @@
             <div class="navbar-start">
                 <a class="navbar-item" href="/">Home</a>
                 <a class="navbar-item" href="/about">About</a>
+                <a class="navbar-item" href="/giveaway">Free Stuff</a>
                 {{if .LoggedIn}}
                 <a class="navbar-item" href="/dashboard">Dashboard</a>
                 {{end}}
@@ -32,6 +33,10 @@
                         <a class="navbar-item" href="/dashboard">
                             <span class="icon"><i class="fas fa-user"></i></span>
                             <span>Profile</span>
+                        </a>
+                        <a class="navbar-item" href="/admin/giveaway">
+                            <span class="icon"><i class="fas fa-boxes-stacked"></i></span>
+                            <span>Manage Giveaways</span>
                         </a>
                         <hr class="navbar-divider">
                         <a class="navbar-item" href="/logout">
@@ -75,6 +80,7 @@
             <div class="navbar-start">
                 <a class="navbar-item" href="/">Home</a>
                 <a class="navbar-item" href="/about">About</a>
+                <a class="navbar-item" href="/giveaway">Free Stuff</a>
                 {{if .LoggedIn}}
                 <a class="navbar-item" href="/dashboard">Dashboard</a>
                 {{end}}
@@ -90,6 +96,10 @@
                         <a class="navbar-item" href="/dashboard">
                             <span class="icon"><i class="fas fa-user"></i></span>
                             <span>Profile</span>
+                        </a>
+                        <a class="navbar-item" href="/admin/giveaway">
+                            <span class="icon"><i class="fas fa-boxes-stacked"></i></span>
+                            <span>Manage Giveaways</span>
                         </a>
                         <hr class="navbar-divider">
                         <a class="navbar-item" href="/logout">
