@@ -7,9 +7,15 @@ import (
 
 // Config holds all application configuration.
 type Config struct {
-	Server  ServerConfig
-	DB      DBConfig
-	Session SessionConfig
+	Server   ServerConfig
+	DB       DBConfig
+	Giveaway GiveawayConfig
+	Session  SessionConfig
+}
+
+// GiveawayConfig holds giveaway service settings.
+type GiveawayConfig struct {
+	DBPath string // path to giveaway SQLite database file
 }
 
 // ServerConfig holds HTTP server settings.
@@ -38,6 +44,9 @@ func Load() *Config {
 		},
 		DB: DBConfig{
 			Path: getEnv("DB_PATH", "portal.db"),
+		},
+		Giveaway: GiveawayConfig{
+			DBPath: getEnv("GIVEAWAY_DB_PATH", "giveaway.db"),
 		},
 		Session: SessionConfig{
 			Secret: getEnv("SESSION_SECRET", ""),

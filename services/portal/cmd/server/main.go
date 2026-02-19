@@ -51,6 +51,13 @@ func main() {
 	}
 	defer db.Close()
 
+	// Initialize giveaway database.
+	giveawayDB, err := database.NewGiveaway(cfg.Giveaway.DBPath)
+	if err != nil {
+		log.Fatalf("Failed to initialize giveaway database: %v", err)
+	}
+	defer giveawayDB.Close()
+
 	// Initialize auth service.
 	authService := auth.New(db, cfg)
 
@@ -78,7 +85,7 @@ func main() {
 	})
 
 	// Initialize handlers.
-	h := handlers.New(db, cfg, authService)
+	h := handlers.New(db, giveawayDB, cfg, authService)
 
 	// Static file serving.
 	staticDir := filepath.Join("services", "portal", "static")
@@ -94,10 +101,30 @@ func main() {
 	r.Post("/signup", h.Signup)
 	r.Get("/logout", h.Logout)
 
+	// Public giveaway routes (no auth required).
+	r.Get("/giveaway", h.GiveawayList)
+	r.Get("/giveaway/{id}", h.GiveawayItem)
+	r.Post("/giveaway/{id}/claim", h.GiveawayClaimSubmit)
+
+	// Public JSON API.
+	r.Route("/api", func(r chi.Router) {
+		r.Get("/items", h.APIListItems)
+		r.Get("/fee", h.APICalculateFee)
+		r.Post("/claims", h.APICreateClaim)
+	})
+
 	// Protected routes.
 	r.Group(func(r chi.Router) {
 		r.Use(handlers.AuthMiddleware(authService))
 		r.Get("/dashboard", h.Dashboard)
+
+		// Admin giveaway management.
+		r.Get("/admin/giveaway", h.AdminGiveawayList)
+		r.Get("/admin/giveaway/new", h.AdminGiveawayNew)
+		r.Get("/admin/giveaway/{id}/edit", h.AdminGiveawayEdit)
+		r.Post("/admin/giveaway/save", h.AdminGiveawaySave)
+		r.Post("/admin/giveaway/{id}/delete", h.AdminGiveawayDelete)
+		r.Post("/admin/giveaway/claims/{id}", h.AdminClaimUpdate)
 	})
 
 	// Start server.
