@@ -101,7 +101,9 @@ func TestCreateEventAndSubscribe(t *testing.T) {
 	r.ServeHTTP(w, req)
 
 	var feed createFeedResp
-	json.Unmarshal(w.Body.Bytes(), &feed)
+	if err := json.Unmarshal(w.Body.Bytes(), &feed); err != nil {
+		t.Fatalf("unmarshal feed: %v", err)
+	}
 
 	// Create an event
 	eventBody, _ := json.Marshal(map[string]interface{}{
@@ -227,7 +229,9 @@ func TestDeleteFeedAndEvents(t *testing.T) {
 	r.ServeHTTP(w, req)
 
 	var feed createFeedResp
-	json.Unmarshal(w.Body.Bytes(), &feed)
+	if err := json.Unmarshal(w.Body.Bytes(), &feed); err != nil {
+		t.Fatalf("unmarshal feed: %v", err)
+	}
 
 	// Delete it
 	req = httptest.NewRequest(http.MethodDelete, "/api/feeds/"+feed.ID, nil)
@@ -244,7 +248,9 @@ func TestDeleteFeedAndEvents(t *testing.T) {
 	r.ServeHTTP(w, req)
 
 	var feeds []database.Feed
-	json.Unmarshal(w.Body.Bytes(), &feeds)
+	if err := json.Unmarshal(w.Body.Bytes(), &feeds); err != nil {
+		t.Fatalf("unmarshal feeds: %v", err)
+	}
 	if len(feeds) != 0 {
 		t.Errorf("expected 0 feeds after delete, got %d", len(feeds))
 	}
