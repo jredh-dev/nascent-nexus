@@ -77,7 +77,7 @@ func testServer(t *testing.T) (srv *httptest.Server, client *http.Client, cleanu
 	cleanup = func() {
 		srv.Close()
 		db.Close()
-		os.Chdir(origDir)
+		_ = os.Chdir(origDir)
 	}
 
 	return srv, client, cleanup

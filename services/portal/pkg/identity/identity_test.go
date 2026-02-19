@@ -73,7 +73,9 @@ func TestHashIdentifier(t *testing.T) {
 	}
 
 	// Same input -> same hash.
-	if HashIdentifier("hello") != HashIdentifier("hello") {
+	hash1 := HashIdentifier("hello")
+	hash2 := HashIdentifier("hello")
+	if hash1 != hash2 {
 		t.Error("same input should produce same hash")
 	}
 
