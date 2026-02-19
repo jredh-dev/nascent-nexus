@@ -1,0 +1,116 @@
+{{template "base" .}}
+
+{{define "content"}}
+<section class="section">
+    <div class="container">
+        <div class="columns is-centered">
+            <div class="column is-8">
+                <h1 class="title is-3">{{if .IsNew}}New Item{{else}}Edit Item{{end}}</h1>
+                <div class="divider mb-5"></div>
+
+                {{if .Error}}
+                <div class="notification is-danger">
+                    <p>{{.Error}}</p>
+                </div>
+                {{end}}
+
+                <form method="POST" action="/admin/giveaway/save">
+                    {{if not .IsNew}}
+                    <input type="hidden" name="id" value="{{.Item.ID}}">
+                    {{end}}
+
+                    <div class="field">
+                        <label class="label">Title</label>
+                        <div class="control">
+                            <input class="input" type="text" name="title" value="{{if .Item}}{{.Item.Title}}{{end}}" required placeholder="Item title">
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <label class="label">Description</label>
+                        <div class="control">
+                            <textarea class="textarea" name="description" placeholder="Describe the item...">{{if .Item}}{{.Item.Description}}{{end}}</textarea>
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <label class="label">Image URL</label>
+                        <div class="control">
+                            <input class="input" type="url" name="image_url" value="{{if .Item}}{{.Item.ImageURL}}{{end}}" placeholder="https://...">
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <label class="label">Condition</label>
+                        <div class="control">
+                            <div class="select">
+                                <select name="condition">
+                                    <option value="new" {{if and .Item (eq (printf "%s" .Item.Condition) "new")}}selected{{end}}>New</option>
+                                    <option value="like_new" {{if and .Item (eq (printf "%s" .Item.Condition) "like_new")}}selected{{end}}>Like New</option>
+                                    <option value="good" {{if or (not .Item) (eq (printf "%s" .Item.Condition) "good")}}selected{{end}}>Good</option>
+                                    <option value="fair" {{if and .Item (eq (printf "%s" .Item.Condition) "fair")}}selected{{end}}>Fair</option>
+                                    <option value="poor" {{if and .Item (eq (printf "%s" .Item.Condition) "poor")}}selected{{end}}>Poor</option>
+                                    <option value="for_parts" {{if and .Item (eq (printf "%s" .Item.Condition) "for_parts")}}selected{{end}}>For Parts</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    {{if not .IsNew}}
+                    <div class="field">
+                        <label class="label">Status</label>
+                        <div class="control">
+                            <div class="select">
+                                <select name="status">
+                                    <option value="available" {{if eq (printf "%s" .Item.Status) "available"}}selected{{end}}>Available</option>
+                                    <option value="claimed" {{if eq (printf "%s" .Item.Status) "claimed"}}selected{{end}}>Claimed</option>
+                                    <option value="gone" {{if eq (printf "%s" .Item.Status) "gone"}}selected{{end}}>Gone</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    {{end}}
+
+                    <div class="columns">
+                        <div class="column">
+                            <div class="field">
+                                <label class="label">Distance (one-way miles)</label>
+                                <div class="control">
+                                    <input class="input" type="number" step="0.1" min="0" name="dist_miles" value="{{if .Item}}{{printf "%.1f" .Item.DistMiles}}{{else}}0{{end}}" placeholder="5.0">
+                                </div>
+                                <p class="help">Miles from the federal building in downtown Seattle</p>
+                            </div>
+                        </div>
+                        <div class="column">
+                            <div class="field">
+                                <label class="label">Drive time (one-way minutes)</label>
+                                <div class="control">
+                                    <input class="input" type="number" min="0" name="drive_minutes" value="{{if .Item}}{{.Item.DriveMinutes}}{{else}}0{{end}}" placeholder="15">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {{if and (not .IsNew) .Fee}}
+                    <div class="notification is-light">
+                        <p class="has-text-weight-semibold">Calculated delivery fee: ${{printf "%.2f" .Fee.Total}}</p>
+                        <p class="is-size-7">Labor: ${{printf "%.2f" .Fee.LaborCost}} + Fuel: ${{printf "%.2f" .Fee.FuelCost}}</p>
+                    </div>
+                    {{end}}
+
+                    <div class="field is-grouped mt-5">
+                        <div class="control">
+                            <button type="submit" class="button primary-btn is-rounded cta">
+                                {{if .IsNew}}Create Item{{else}}Save Changes{{end}}
+                            </button>
+                        </div>
+                        <div class="control">
+                            <a href="/admin/giveaway" class="button is-rounded cta">Cancel</a>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</section>
+{{end}}

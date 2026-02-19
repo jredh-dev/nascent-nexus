@@ -1,0 +1,56 @@
+{{template "base" .}}
+
+{{define "content"}}
+<section class="hero is-fresh-primary is-medium">
+    <div class="hero-body">
+        <div class="container has-text-centered">
+            <h1 class="title is-2">Free Stuff</h1>
+            <p class="subtitle">Browse available items. Claim what you need — just cover the delivery fee.</p>
+        </div>
+    </div>
+</section>
+
+<section class="section">
+    <div class="container">
+        {{if .Items}}
+        <div class="columns is-multiline">
+            {{range .Items}}
+            <div class="column is-4">
+                <div class="card fresh-card">
+                    {{if .ImageURL}}
+                    <div class="card-image">
+                        <figure class="image is-4by3">
+                            <img src="{{.ImageURL}}" alt="{{.Title}}">
+                        </figure>
+                    </div>
+                    {{end}}
+                    <div class="card-content">
+                        <p class="title is-5">{{.Title}}</p>
+                        <p class="subtitle is-6 has-text-fresh-muted">Condition: {{.Condition}}</p>
+                        {{if .Description}}
+                        <p>{{.Description}}</p>
+                        {{end}}
+                        <hr>
+                        <p class="has-text-weight-semibold">
+                            Delivery fee: ${{printf "%.2f" .Fee.Total}}
+                        </p>
+                        <p class="is-size-7 has-text-fresh-muted">
+                            {{printf "%.1f" .Fee.RoundTripMiles}} mi round trip
+                        </p>
+                    </div>
+                    <footer class="card-footer">
+                        <a href="/giveaway/{{.ID}}" class="card-footer-item has-text-weight-semibold" style="color: var(--fresh-primary);">View &amp; Claim</a>
+                    </footer>
+                </div>
+            </div>
+            {{end}}
+        </div>
+        {{else}}
+        <div class="has-text-centered py-6">
+            <p class="title is-4 has-text-fresh-muted">No items available right now.</p>
+            <p class="subtitle is-6">Check back later!</p>
+        </div>
+        {{end}}
+    </div>
+</section>
+{{end}}

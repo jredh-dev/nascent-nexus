@@ -1,0 +1,115 @@
+{{template "base" .}}
+
+{{define "content"}}
+<section class="section">
+    <div class="container">
+        <h1 class="title is-3">Manage Giveaways</h1>
+        <div class="divider mb-5"></div>
+
+        <a href="/admin/giveaway/new" class="button primary-btn is-rounded cta mb-5">
+            <span class="icon"><i class="fas fa-plus"></i></span>
+            <span>New Item</span>
+        </a>
+
+        {{if .Items}}
+        <h2 class="title is-5">Items</h2>
+        <div class="table-container">
+            <table class="table is-fullwidth is-hoverable is-striped">
+                <thead>
+                    <tr>
+                        <th>Title</th>
+                        <th>Condition</th>
+                        <th>Status</th>
+                        <th>Distance</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {{range .Items}}
+                    <tr>
+                        <td>{{.Title}}</td>
+                        <td>{{.Condition}}</td>
+                        <td>
+                            {{if eq (printf "%s" .Status) "available"}}
+                                <span class="tag is-success">Available</span>
+                            {{else if eq (printf "%s" .Status) "claimed"}}
+                                <span class="tag is-warning">Claimed</span>
+                            {{else}}
+                                <span class="tag is-dark">Gone</span>
+                            {{end}}
+                        </td>
+                        <td>{{printf "%.1f" .DistMiles}} mi</td>
+                        <td>
+                            <a href="/admin/giveaway/{{.ID}}/edit" class="button is-small is-info is-rounded">Edit</a>
+                            <form method="POST" action="/admin/giveaway/{{.ID}}/delete" style="display:inline">
+                                <button type="submit" class="button is-small is-danger is-rounded" onclick="return confirm('Delete this item?')">Delete</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {{end}}
+                </tbody>
+            </table>
+        </div>
+        {{else}}
+        <p class="has-text-fresh-muted">No items yet. Add one above.</p>
+        {{end}}
+
+        {{if .Claims}}
+        <h2 class="title is-5 mt-6">Claims</h2>
+        <div class="table-container">
+            <table class="table is-fullwidth is-hoverable is-striped">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Item</th>
+                        <th>Fee</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {{range .Claims}}
+                    <tr>
+                        <td>{{.ClaimerName}}</td>
+                        <td>{{.ClaimerEmail}}</td>
+                        <td>{{.ItemID}}</td>
+                        <td>${{printf "%.2f" .DeliveryFee}}</td>
+                        <td>
+                            {{if eq (printf "%s" .Status) "pending"}}
+                                <span class="tag is-warning">Pending</span>
+                            {{else if eq (printf "%s" .Status) "confirmed"}}
+                                <span class="tag is-info">Confirmed</span>
+                            {{else if eq (printf "%s" .Status) "delivered"}}
+                                <span class="tag is-success">Delivered</span>
+                            {{else}}
+                                <span class="tag is-danger">Cancelled</span>
+                            {{end}}
+                        </td>
+                        <td>
+                            {{if eq (printf "%s" .Status) "pending"}}
+                            <form method="POST" action="/admin/giveaway/claims/{{.ID}}" style="display:inline">
+                                <input type="hidden" name="status" value="confirmed">
+                                <button type="submit" class="button is-small is-info is-rounded">Confirm</button>
+                            </form>
+                            {{end}}
+                            {{if or (eq (printf "%s" .Status) "pending") (eq (printf "%s" .Status) "confirmed")}}
+                            <form method="POST" action="/admin/giveaway/claims/{{.ID}}" style="display:inline">
+                                <input type="hidden" name="status" value="delivered">
+                                <button type="submit" class="button is-small is-success is-rounded">Delivered</button>
+                            </form>
+                            <form method="POST" action="/admin/giveaway/claims/{{.ID}}" style="display:inline">
+                                <input type="hidden" name="status" value="cancelled">
+                                <button type="submit" class="button is-small is-danger is-rounded">Cancel</button>
+                            </form>
+                            {{end}}
+                        </td>
+                    </tr>
+                    {{end}}
+                </tbody>
+            </table>
+        </div>
+        {{end}}
+    </div>
+</section>
+{{end}}

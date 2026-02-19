@@ -1,0 +1,113 @@
+{{template "base" .}}
+
+{{define "content"}}
+<section class="section">
+    <div class="container">
+        <div class="columns is-centered">
+            <div class="column is-8">
+                {{if .Success}}
+                <div class="notification is-success">
+                    <p class="has-text-weight-semibold">{{.Success}}</p>
+                </div>
+                {{end}}
+
+                {{if .Error}}
+                <div class="notification is-danger">
+                    <p>{{.Error}}</p>
+                </div>
+                {{end}}
+
+                <h1 class="title is-3">{{.Item.Title}}</h1>
+
+                {{if .Item.ImageURL}}
+                <figure class="image is-16by9 mb-5">
+                    <img src="{{.Item.ImageURL}}" alt="{{.Item.Title}}">
+                </figure>
+                {{end}}
+
+                <div class="content">
+                    <p><strong>Condition:</strong> {{.Item.Condition}}</p>
+                    <p><strong>Status:</strong> {{.Item.Status}}</p>
+                    {{if .Item.Description}}
+                    <p>{{.Item.Description}}</p>
+                    {{end}}
+                </div>
+
+                <div class="box">
+                    <h2 class="title is-5">Delivery Fee Breakdown</h2>
+                    <table class="table is-fullwidth">
+                        <tbody>
+                            <tr>
+                                <td>Distance (one-way)</td>
+                                <td class="has-text-right">{{printf "%.1f" .Fee.Miles}} mi</td>
+                            </tr>
+                            <tr>
+                                <td>Drive time (one-way)</td>
+                                <td class="has-text-right">{{.Fee.DriveMinutes}} min</td>
+                            </tr>
+                            <tr>
+                                <td>Round trip distance</td>
+                                <td class="has-text-right">{{printf "%.1f" .Fee.RoundTripMiles}} mi</td>
+                            </tr>
+                            <tr>
+                                <td>Labor cost</td>
+                                <td class="has-text-right">${{printf "%.2f" .Fee.LaborCost}}</td>
+                            </tr>
+                            <tr>
+                                <td>Fuel cost</td>
+                                <td class="has-text-right">${{printf "%.2f" .Fee.FuelCost}}</td>
+                            </tr>
+                            <tr class="has-text-weight-bold">
+                                <td>Total delivery fee</td>
+                                <td class="has-text-right">${{printf "%.2f" .Fee.Total}}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <p class="is-size-7 has-text-fresh-muted">
+                        Distance measured from the federal building in downtown Seattle.
+                        Based on WA minimum wage ($20/hr), $5/gal gas, 20 MPG.
+                    </p>
+                </div>
+
+                {{if eq (printf "%s" .Item.Status) "available"}}
+                {{if not .Success}}
+                <div class="box">
+                    <h2 class="title is-5">Claim This Item</h2>
+                    <form method="POST" action="/giveaway/{{.Item.ID}}/claim">
+                        <div class="field">
+                            <label class="label">Name</label>
+                            <div class="control">
+                                <input class="input" type="text" name="name" value="{{.Name}}" required placeholder="Your name">
+                            </div>
+                        </div>
+                        <div class="field">
+                            <label class="label">Email</label>
+                            <div class="control">
+                                <input class="input" type="email" name="email" value="{{.Email}}" required placeholder="your@email.com">
+                            </div>
+                        </div>
+                        <div class="field">
+                            <label class="label">Phone (optional)</label>
+                            <div class="control">
+                                <input class="input" type="tel" name="phone" value="{{.Phone}}" placeholder="(206) 555-1234">
+                            </div>
+                        </div>
+                        <div class="field">
+                            <button type="submit" class="button cta is-rounded primary-btn is-fullwidth">
+                                Claim — ${{printf "%.2f" .Fee.Total}} delivery fee
+                            </button>
+                        </div>
+                    </form>
+                </div>
+                {{end}}
+                {{end}}
+
+                <a href="/giveaway" class="button btn-outlined primary-btn is-rounded mt-4">
+                    <span class="icon"><i class="fas fa-arrow-left"></i></span>
+                    <span>Back to all items</span>
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+{{end}}
