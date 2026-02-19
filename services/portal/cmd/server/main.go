@@ -126,8 +126,8 @@ func seedDevUsers(authService *auth.Service) {
 		password string
 		name     string
 	}{
-		{"admin@localhost", "admin", "Admin"},
-		{"demo@localhost", "demo", "Demo User"},
+		{"admin@admin.com", "admin", "Admin"},
+		{"demo@demo.com", "demo", "Demo User"},
 	}
 
 	for _, u := range users {
