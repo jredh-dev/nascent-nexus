@@ -1,0 +1,52 @@
+# definitions.yaml
+#
+# Canonical definitions used across all laws and bylaws.
+# Each definition follows the structure:
+#
+#   term:
+#     definition: <core meaning>
+#     exceptions: <what it does NOT include>
+#     examples: <illustrative cases, edge cases>
+#     notes: <context, sourcing, refinement history>
+#
+# Definitions start loose and are refined over time by adding
+# exceptions and conditions — never by narrowing the core definition.
+
+american:
+  definition: >
+    Any person who has spent any amount of time on American soil.
+  exceptions: []
+  examples:
+    - born citizen
+    - naturalized citizen
+    - visa holder
+    - undocumented resident
+    - tourist passing through
+  notes: >
+    Intentionally the loosest possible definition. To be refined
+    with exceptions and conditions as needed — not by restricting
+    the core meaning.
+
+bird:
+  definition: >
+    A feathered biped.
+  exceptions:
+    - A man who has been tarred and feathered (still a man, not a bird).
+  examples:
+    ordinary:
+      - sparrow
+      - eagle
+      - robin
+    strange:
+      - emu
+      - ostrich
+      - penguin
+      - kiwi
+    definitively not a bird:
+      - Diogenes' plucked chicken
+  notes: >
+    Reference: Plato defined man as a "featherless biped." Diogenes
+    of Sinope plucked a chicken, brought it to the Academy, and
+    declared "Behold! I have brought you Plato's man." Plato amended
+    his definition to "featherless biped with broad flat nails."
+    Lesson: definitions need exceptions.
