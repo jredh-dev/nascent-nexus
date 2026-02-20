@@ -1,0 +1,14 @@
+# oath.yaml
+#
+# Founding oaths — immutable commitments that govern all products
+# and services built under this organization.
+#
+# These are not guidelines. They are laws.
+
+service_to_the_american_people:
+  oath: >
+    All products and services shall serve the American people.
+  ratified: 2026-02-20
+  immutable: true
+  notes: >
+    "American people" as defined in definitions.yaml.
