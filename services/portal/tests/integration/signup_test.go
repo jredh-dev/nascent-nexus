@@ -13,6 +13,7 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/jredh-dev/nexus/services/portal/config"
+	"github.com/jredh-dev/nexus/services/portal/internal/actions"
 	"github.com/jredh-dev/nexus/services/portal/internal/auth"
 	"github.com/jredh-dev/nexus/services/portal/internal/database"
 	"github.com/jredh-dev/nexus/services/portal/internal/web/handlers"
@@ -53,7 +54,7 @@ func testServer(t *testing.T) (srv *httptest.Server, client *http.Client, cleanu
 	}
 
 	authService := auth.New(db, cfg)
-	h := handlers.New(db, giveawayDB, cfg, authService)
+	h := handlers.New(db, giveawayDB, cfg, authService, actions.New())
 
 	r := chi.NewRouter()
 	r.Get("/", h.Home)

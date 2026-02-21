@@ -29,7 +29,7 @@ type Handler struct {
 }
 
 // New creates a new handler with parsed templates.
-func New(db *database.DB, giveawayDB *database.GiveawayDB, cfg *config.Config, authService *auth.Service) *Handler {
+func New(db *database.DB, giveawayDB *database.GiveawayDB, cfg *config.Config, authService *auth.Service, registry *actions.Registry) *Handler {
 	tmplMap := make(map[string]*template.Template)
 
 	// Collect shared templates: base.html + all partials.
@@ -60,7 +60,7 @@ func New(db *database.DB, giveawayDB *database.GiveawayDB, cfg *config.Config, a
 		cfg:        cfg,
 		auth:       authService,
 		templates:  tmplMap,
-		actions:    actions.New(),
+		actions:    registry,
 	}
 }
 
