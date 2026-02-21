@@ -16,9 +16,12 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+	"github.com/jredh-dev/nexus/gen/portal/v1/portalv1connect"
 	"github.com/jredh-dev/nexus/services/portal/config"
+	"github.com/jredh-dev/nexus/services/portal/internal/actions"
 	"github.com/jredh-dev/nexus/services/portal/internal/auth"
 	"github.com/jredh-dev/nexus/services/portal/internal/database"
+	"github.com/jredh-dev/nexus/services/portal/internal/rpc"
 	"github.com/jredh-dev/nexus/services/portal/internal/web/handlers"
 )
 
@@ -56,6 +59,9 @@ func main() {
 	// Initialize auth service.
 	authService := auth.New(db, cfg)
 
+	// Initialize actions registry (shared between HTTP handlers and RPC).
+	actionsRegistry := actions.New()
+
 	// Seed demo user in all environments so visitors can log in.
 	seedDemoUser(authService)
 
@@ -78,12 +84,22 @@ func main() {
 	})
 
 	// Initialize handlers.
-	h := handlers.New(db, cfg, authService)
+	h := handlers.New(db, cfg, authService, actionsRegistry)
 
 	// Static file serving.
 	staticDir := filepath.Join("services", "portal", "static")
 	fileServer := http.FileServer(http.Dir(staticDir))
 	r.Handle("/static/*", http.StripPrefix("/static/", fileServer))
+
+	// Connect RPC handlers (Astro frontend talks to these).
+	authPath, authHandler := portalv1connect.NewAuthServiceHandler(
+		rpc.NewAuthServer(authService, cfg),
+	)
+	actionsPath, actionsHandler := portalv1connect.NewActionsServiceHandler(
+		rpc.NewActionsServer(actionsRegistry, authService),
+	)
+	r.Handle(authPath+"*", authHandler)
+	r.Handle(actionsPath+"*", actionsHandler)
 
 	// Public routes.
 	r.Get("/", h.Home)

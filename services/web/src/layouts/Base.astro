@@ -1,0 +1,74 @@
+---
+interface Props {
+  title?: string;
+  extraHead?: string;
+}
+
+const { title } = Astro.props;
+const pageTitle = title ? `${title} - Hooper Development` : 'Hooper Development';
+---
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{pageTitle}</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@1.0.2/css/bulma.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Open+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+    <slot name="head" />
+</head>
+<body>
+    <slot name="navbar" />
+
+    <div class="main-content">
+        <slot />
+    </div>
+
+    <slot name="footer" />
+
+    <!-- Back to top button -->
+    <div id="backtotop">
+        <a href="#"><i class="fas fa-angle-up"></i></a>
+    </div>
+
+    <script>
+        // Mobile navbar burger toggle
+        document.querySelectorAll('.navbar-burger').forEach(el => {
+            el.addEventListener('click', () => {
+                const target = document.getElementById(el.dataset.target!);
+                el.classList.toggle('is-active');
+                target?.classList.toggle('is-active');
+            });
+        });
+
+        // Scroll-based navbar clone
+        const navbarClone = document.getElementById('navbar-clone');
+        if (navbarClone) {
+            window.addEventListener('scroll', () => {
+                navbarClone.classList.toggle('is-active', window.scrollY >= 60);
+            });
+        }
+
+        // Back to top button
+        const backToTop = document.getElementById('backtotop');
+        if (backToTop) {
+            window.addEventListener('scroll', () => {
+                backToTop.classList.toggle('visible', window.scrollY >= 400);
+            });
+            backToTop.querySelector('a')?.addEventListener('click', (e) => {
+                e.preventDefault();
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            });
+        }
+    </script>
+</body>
+</html>
+
+<style is:global>
+    @import '../styles/fresh-theme.css';
+    @import '../styles/magic-bar.css';
+</style>
