@@ -57,4 +57,6 @@ module "cloud_run" {
   allow_unauthenticated = true
 
   labels = local.common_labels
+
+  custom_domain = var.custom_domain
 }

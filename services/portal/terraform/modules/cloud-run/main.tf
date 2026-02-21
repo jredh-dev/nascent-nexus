@@ -83,6 +83,12 @@ variable "labels" {
   default     = {}
 }
 
+variable "custom_domain" {
+  description = "Custom domain to map to the service (e.g., portal.jredh.com). Empty string to skip."
+  type        = string
+  default     = ""
+}
+
 # Cloud Run Service
 resource "google_cloud_run_service" "service" {
   project  = var.project_id
@@ -177,6 +183,28 @@ resource "google_cloud_run_service_iam_member" "public_access" {
   member   = "allUsers"
 }
 
+# Custom domain mapping (if provided)
+resource "google_cloud_run_domain_mapping" "domain" {
+  count = var.custom_domain != "" ? 1 : 0
+
+  project  = var.project_id
+  location = var.region
+  name     = var.custom_domain
+
+  metadata {
+    namespace = var.project_id
+  }
+
+  spec {
+    route_name = google_cloud_run_service.service.name
+  }
+
+  lifecycle {
+    # Don't destroy mapping if service is being replaced
+    create_before_destroy = true
+  }
+}
+
 # Outputs
 output "service_url" {
   description = "Cloud Run service URL"
@@ -191,4 +219,14 @@ output "service_name" {
 output "service_id" {
   description = "Cloud Run service resource ID"
   value       = google_cloud_run_service.service.id
+}
+
+output "custom_domain" {
+  description = "Custom domain mapped to the service"
+  value       = var.custom_domain != "" ? var.custom_domain : null
+}
+
+output "domain_dns_records" {
+  description = "DNS records required for domain mapping"
+  value       = var.custom_domain != "" ? google_cloud_run_domain_mapping.domain[0].status[0].resource_records : []
 }
