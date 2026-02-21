@@ -28,3 +28,9 @@ variable "portal_url" {
   type        = string
   default     = "https://nexus-portal-dev-2tvic4xjjq-uc.a.run.app"
 }
+
+variable "custom_domain" {
+  description = "Custom domain for the web frontend"
+  type        = string
+  default     = "portal.jredh.com"
+}

@@ -23,10 +23,11 @@ output "service_name" {
 output "deployment_summary" {
   description = "Deployment summary"
   value = {
-    environment = "dev"
-    service_url = module.cloud_run.service_url
-    project_id  = var.project_id
-    region      = var.region
-    portal_url  = var.portal_url
+    environment   = "dev"
+    service_url   = module.cloud_run.service_url
+    custom_domain = module.cloud_run.custom_domain
+    project_id    = var.project_id
+    region        = var.region
+    portal_url    = var.portal_url
   }
 }
