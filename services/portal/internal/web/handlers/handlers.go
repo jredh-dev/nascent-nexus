@@ -245,15 +245,6 @@ func (h *Handler) SearchActions(w http.ResponseWriter, r *http.Request) {
 
 // --- helpers ---
 
-func (h *Handler) isLoggedIn(r *http.Request) bool {
-	cookie, err := r.Cookie("session")
-	if err != nil || cookie.Value == "" {
-		return false
-	}
-	user, _, err := h.auth.ValidateSession(cookie.Value)
-	return err == nil && user != nil
-}
-
 // jsonError writes a JSON error response.
 func (h *Handler) jsonError(w http.ResponseWriter, msg string, status int) {
 	w.Header().Set("Content-Type", "application/json")
