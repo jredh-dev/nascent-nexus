@@ -32,7 +32,6 @@ func testServerWithDB(t *testing.T) (srv *httptest.Server, client *http.Client, 
 
 	dir := t.TempDir()
 	dbPath := filepath.Join(dir, "test.db")
-	giveawayDBPath := filepath.Join(dir, "giveaway_test.db")
 
 	var err error
 	db, err = database.New(dbPath)
@@ -40,20 +39,14 @@ func testServerWithDB(t *testing.T) (srv *httptest.Server, client *http.Client, 
 		t.Fatalf("open test db: %v", err)
 	}
 
-	giveawayDB, err := database.NewGiveaway(giveawayDBPath)
-	if err != nil {
-		t.Fatalf("open giveaway test db: %v", err)
-	}
-
 	cfg := &config.Config{
-		Server:   config.ServerConfig{Port: "0", Env: "test"},
-		DB:       config.DBConfig{Path: dbPath},
-		Giveaway: config.GiveawayConfig{DBPath: giveawayDBPath},
-		Session:  config.SessionConfig{Secret: "test-secret", MaxAge: 3600},
+		Server:  config.ServerConfig{Port: "0", Env: "test"},
+		DB:      config.DBConfig{Path: dbPath},
+		Session: config.SessionConfig{Secret: "test-secret", MaxAge: 3600},
 	}
 
 	authSvc = auth.New(db, cfg)
-	h := handlers.New(db, giveawayDB, cfg, authSvc, actions.New())
+	h := handlers.New(db, cfg, authSvc, actions.New())
 
 	r := chi.NewRouter()
 	r.Get("/", h.Home)
@@ -70,7 +63,6 @@ func testServerWithDB(t *testing.T) (srv *httptest.Server, client *http.Client, 
 	r.Group(func(r chi.Router) {
 		r.Use(handlers.AuthMiddleware(authSvc))
 		r.Use(handlers.AdminMiddleware)
-		r.Get("/admin/giveaway", h.AdminGiveawayList)
 		r.Post("/admin/magic-link", h.AdminGenerateMagicLink)
 	})
 
@@ -90,7 +82,6 @@ func testServerWithDB(t *testing.T) (srv *httptest.Server, client *http.Client, 
 	cleanup = func() {
 		srv.Close()
 		db.Close()
-		giveawayDB.Close()
 		_ = os.Chdir(origDir)
 	}
 
@@ -119,17 +110,17 @@ func TestAdminRoutes_UnauthenticatedRedirectsToLogin(t *testing.T) {
 	srv, client, _, _, cleanup := testServerWithDB(t)
 	defer cleanup()
 
-	// Unauthenticated requests to admin routes should redirect to /login.
-	for _, path := range []string{"/admin/giveaway"} {
-		resp, err := client.Get(srv.URL + path)
-		if err != nil {
-			t.Fatalf("GET %s: %v", path, err)
-		}
-		resp.Body.Close()
+	// Unauthenticated POST to admin route should redirect to /login.
+	resp, err := postForm(client, srv.URL+"/admin/magic-link", url.Values{
+		"email": {"nobody@example.com"},
+	})
+	if err != nil {
+		t.Fatalf("POST /admin/magic-link: %v", err)
+	}
+	resp.Body.Close()
 
-		if !strings.HasSuffix(resp.Request.URL.Path, "/login") {
-			t.Errorf("unauthenticated GET %s: landed on %s, want /login", path, resp.Request.URL.Path)
-		}
+	if !strings.HasSuffix(resp.Request.URL.Path, "/login") {
+		t.Errorf("unauthenticated POST /admin/magic-link: landed on %s, want /login", resp.Request.URL.Path)
 	}
 }
 
@@ -150,14 +141,18 @@ func TestAdminRoutes_NonAdminGetsForbidden(t *testing.T) {
 		},
 	}
 
-	resp, err := noRedirectClient.Get(srv.URL + "/admin/giveaway")
+	resp, err := noRedirectClient.Post(
+		srv.URL+"/admin/magic-link",
+		"application/x-www-form-urlencoded",
+		strings.NewReader(url.Values{"email": {"regular@example.com"}}.Encode()),
+	)
 	if err != nil {
-		t.Fatalf("GET /admin/giveaway: %v", err)
+		t.Fatalf("POST /admin/magic-link: %v", err)
 	}
 	resp.Body.Close()
 
 	if resp.StatusCode != http.StatusForbidden {
-		t.Errorf("non-admin GET /admin/giveaway: status = %d, want 403", resp.StatusCode)
+		t.Errorf("non-admin POST /admin/magic-link: status = %d, want 403", resp.StatusCode)
 	}
 }
 
@@ -201,14 +196,18 @@ func TestAdminRoutes_AdminCanAccess(t *testing.T) {
 		},
 	}
 
-	resp, err = noRedirectClient.Get(srv.URL + "/admin/giveaway")
+	resp, err = noRedirectClient.Post(
+		srv.URL+"/admin/magic-link",
+		"application/x-www-form-urlencoded",
+		strings.NewReader(url.Values{"email": {"admin@example.com"}}.Encode()),
+	)
 	if err != nil {
-		t.Fatalf("GET /admin/giveaway: %v", err)
+		t.Fatalf("POST /admin/magic-link: %v", err)
 	}
 	resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		t.Errorf("admin GET /admin/giveaway: status = %d, want 200", resp.StatusCode)
+		t.Errorf("admin POST /admin/magic-link: status = %d, want 200", resp.StatusCode)
 	}
 }
 
