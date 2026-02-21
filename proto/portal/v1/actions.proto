@@ -1,0 +1,28 @@
+syntax = "proto3";
+
+package portal.v1;
+
+option go_package = "github.com/jredh-dev/nexus/gen/portal/v1;portalv1";
+
+// ActionsService provides the magic bar command palette.
+service ActionsService {
+  // Search returns actions matching a query, filtered by auth state.
+  rpc Search(SearchActionsRequest) returns (SearchActionsResponse);
+}
+
+message SearchActionsRequest {
+  string query = 1;
+}
+
+message SearchActionsResponse {
+  repeated Action actions = 1;
+}
+
+// Action represents an executable item in the magic bar.
+message Action {
+  string id = 1;
+  string type = 2;
+  string title = 3;
+  string description = 4;
+  string target = 5;
+}

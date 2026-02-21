@@ -1,0 +1,21 @@
+version: v2
+managed:
+  enabled: true
+  override:
+    - file_option: go_package_prefix
+      value: github.com/jredh-dev/nexus/gen
+plugins:
+  # Go protobuf
+  - remote: buf.build/protocolbuffers/go
+    out: gen
+    opt: paths=source_relative
+  # Connect Go
+  - remote: buf.build/connectrpc/go
+    out: gen
+    opt: paths=source_relative
+  # Connect ES (TypeScript)
+  - remote: buf.build/connectrpc/es
+    out: services/web/src/gen
+  # Protobuf ES (TypeScript message types)
+  - remote: buf.build/bufbuild/es
+    out: services/web/src/gen
