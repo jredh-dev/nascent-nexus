@@ -1,16 +1,23 @@
 ---
+import type { Locale } from '../i18n/config';
+import { locales, localeNames } from '../i18n/config';
+import { switchLocalePath } from '../i18n/utils';
+
 interface Props {
   title?: string;
   /** Full-bleed mode (no topbar) — used by homepage */
   minimal?: boolean;
+  /** Current locale for <html lang> */
+  lang?: Locale;
 }
 
-const { title, minimal = false } = Astro.props;
+const { title, minimal = false, lang = 'en' } = Astro.props;
 const pageTitle = title ? `${title} - Hooper Development` : 'Hooper Development';
+const currentPath = Astro.url.pathname;
 ---
 
 <!DOCTYPE html>
-<html lang="en">
+<html lang={lang}>
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -20,6 +27,10 @@ const pageTitle = title ? `${title} - Hooper Development` : 'Hooper Development'
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Open+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+    {/* Alternate language links for SEO */}
+    {locales.map(l => (
+        <link rel="alternate" hreflang={l} href={switchLocalePath(currentPath, l)} />
+    ))}
     <slot name="head" />
 </head>
 <body>

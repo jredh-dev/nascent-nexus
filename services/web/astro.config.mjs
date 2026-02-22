@@ -12,6 +12,15 @@ export default defineConfig({
     checkOrigin: false,
   },
 
+  i18n: {
+    defaultLocale: 'en',
+    locales: ['en', 'es'],
+    routing: {
+      prefixDefaultLocale: true,
+      redirectToDefaultLocale: false,
+    },
+  },
+
   integrations: [preact()],
 
   adapter: node({

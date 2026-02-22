@@ -8,34 +8,57 @@ interface Action {
   icon?: string;
 }
 
+interface MagicBarI18n {
+  navItems: Action[];
+  sectionNavigate: string;
+  sectionSearch: string;
+  searching: string;
+  noResults: string;
+  ariaLabel: string;
+  placeholderHero: string;
+  placeholderCompact: string;
+}
+
 interface Props {
   /** Render as large centered homepage variant */
   hero?: boolean;
   placeholder?: string;
+  /** Translations — passed from server-side i18n helpers */
+  i18n?: MagicBarI18n;
 }
 
-const NAV_ITEMS: Action[] = [
-  { title: 'Home', description: 'Go to homepage', type: 'navigation', target: '/', icon: 'fa-house' },
-  { title: 'About', description: 'Learn about me', type: 'navigation', target: '/about', icon: 'fa-user' },
-  { title: 'Login', description: 'Sign in to your account', type: 'navigation', target: '/login', icon: 'fa-right-to-bracket' },
-  { title: 'Sign Up', description: 'Create a new account', type: 'navigation', target: '/signup', icon: 'fa-user-plus' },
-  { title: 'Dashboard', description: 'View your dashboard', type: 'navigation', target: '/dashboard', icon: 'fa-gauge' },
+// Fallback nav items when i18n prop is not provided (shouldn't happen in practice).
+const DEFAULT_NAV_ITEMS: Action[] = [
+  { title: 'Home', description: 'Go to homepage', type: 'navigation', target: '/en/', icon: 'fa-house' },
+  { title: 'About', description: 'Learn about me', type: 'navigation', target: '/en/about', icon: 'fa-user' },
+  { title: 'Login', description: 'Sign in to your account', type: 'navigation', target: '/en/login', icon: 'fa-right-to-bracket' },
+  { title: 'Sign Up', description: 'Create a new account', type: 'navigation', target: '/en/signup', icon: 'fa-user-plus' },
+  { title: 'Dashboard', description: 'View your dashboard', type: 'navigation', target: '/en/dashboard', icon: 'fa-gauge' },
   { title: 'Logout', description: 'Sign out', type: 'navigation', target: '/logout', icon: 'fa-right-from-bracket' },
   { title: 'Contact', description: 'Send me an email', type: 'navigation', target: 'mailto:dev@jredh.com', icon: 'fa-envelope' },
 ];
 
 const DEBOUNCE_MS = 200;
 
-function filterNav(q: string): Action[] {
+function filterNav(q: string, items: Action[]): Action[] {
   const lower = q.toLowerCase();
-  return NAV_ITEMS.filter(
+  return items.filter(
     (item) =>
       item.title.toLowerCase().includes(lower) ||
       item.description.toLowerCase().includes(lower)
   );
 }
 
-export default function MagicBar({ hero = false, placeholder }: Props) {
+export default function MagicBar({ hero = false, placeholder, i18n }: Props) {
+  const navItems = i18n?.navItems ?? DEFAULT_NAV_ITEMS;
+  const sectionNavigate = i18n?.sectionNavigate ?? 'Navigate';
+  const sectionSearch = i18n?.sectionSearch ?? 'Search';
+  const searchingText = i18n?.searching ?? 'Searching...';
+  const noResultsText = i18n?.noResults ?? 'No results';
+  const ariaLabel = i18n?.ariaLabel ?? 'Navigate or search';
+  const placeholderHero = i18n?.placeholderHero ?? 'Where do you want to go?';
+  const placeholderCompact = i18n?.placeholderCompact ?? 'Search...';
+
   const [query, setQuery] = useState('');
   const [navResults, setNavResults] = useState<Action[]>([]);
   const [apiResults, setApiResults] = useState<Action[]>([]);
@@ -90,14 +113,14 @@ export default function MagicBar({ hero = false, placeholder }: Props) {
     }
 
     // Instant local nav filtering
-    const nav = filterNav(trimmed);
+    const nav = filterNav(trimmed, navItems);
     setNavResults(nav);
     setSelectedIndex(nav.length > 0 ? 0 : -1);
     setIsOpen(true);
 
     // Debounced API search
     debounceRef.current = setTimeout(() => searchApi(trimmed), DEBOUNCE_MS);
-  }, [close, searchApi]);
+  }, [close, searchApi, navItems]);
 
   const onKeydown = useCallback((e: KeyboardEvent) => {
     switch (e.key) {
@@ -157,7 +180,7 @@ export default function MagicBar({ hero = false, placeholder }: Props) {
   }, [selectedIndex]);
 
   const wrapperClass = `magic-bar${hero ? ' magic-bar--hero' : ''}`;
-  const placeholderText = placeholder || (hero ? 'Where do you want to go?' : 'Search...');
+  const placeholderText = placeholder || (hero ? placeholderHero : placeholderCompact);
 
   return (
     <div class={wrapperClass}>
@@ -167,13 +190,13 @@ export default function MagicBar({ hero = false, placeholder }: Props) {
         class="magic-bar-input"
         type="text"
         placeholder={placeholderText}
-        aria-label="Navigate or search"
+        aria-label={ariaLabel}
         value={query}
         onInput={onInput}
         onKeyDown={onKeydown}
         onFocus={() => {
           if (query.trim().length > 0) {
-            const nav = filterNav(query.trim());
+            const nav = filterNav(query.trim(), navItems);
             setNavResults(nav);
             setSelectedIndex(nav.length > 0 ? 0 : -1);
             setIsOpen(true);
@@ -187,7 +210,7 @@ export default function MagicBar({ hero = false, placeholder }: Props) {
         {/* Navigation results */}
         {navResults.length > 0 && (
           <div class="magic-bar-section">
-            <div class="magic-bar-section-label">Navigate</div>
+            <div class="magic-bar-section-label">{sectionNavigate}</div>
             {navResults.map((action, i) => (
               <div
                 class={`magic-bar-item${i === selectedIndex ? ' selected' : ''}`}
@@ -207,7 +230,7 @@ export default function MagicBar({ hero = false, placeholder }: Props) {
         {/* API search results */}
         {apiResults.length > 0 && (
           <div class="magic-bar-section">
-            <div class="magic-bar-section-label">Search</div>
+            <div class="magic-bar-section-label">{sectionSearch}</div>
             {apiResults.map((action, rawI) => {
               const i = navResults.length + rawI;
               return (
@@ -231,12 +254,12 @@ export default function MagicBar({ hero = false, placeholder }: Props) {
 
         {/* Loading indicator */}
         {loading && navResults.length === 0 && apiResults.length === 0 && (
-          <div class="magic-bar-empty">Searching...</div>
+          <div class="magic-bar-empty">{searchingText}</div>
         )}
 
         {/* Empty state */}
         {isOpen && !loading && navResults.length === 0 && apiResults.length === 0 && (
-          <div class="magic-bar-empty">No results</div>
+          <div class="magic-bar-empty">{noResultsText}</div>
         )}
       </div>
     </div>

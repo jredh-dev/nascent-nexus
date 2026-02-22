@@ -1,13 +1,19 @@
 ---
-import Base from '../layouts/Base.astro';
-import Topbar from '../components/Topbar.astro';
+import Base from '../../layouts/Base.astro';
+import Topbar from '../../components/Topbar.astro';
+import { isLocale, type Locale } from '../../i18n/config';
+import { t } from '../../i18n/utils';
+
+const { lang } = Astro.params;
+if (!lang || !isLocale(lang)) return Astro.redirect('/en/about', 302);
+const locale = lang as Locale;
 
 // TODO: Read session from cookie via Connect RPC GetSession call
 const loggedIn = false;
 ---
 
-<Base title="About">
-    <Topbar slot="topbar" />
+<Base title={t(locale, 'about.title')} lang={locale}>
+    <Topbar slot="topbar" locale={locale} />
 
     <section class="section">
         <div class="container">
@@ -15,28 +21,19 @@ const loggedIn = false;
                 <div class="column is-8">
                     <div class="about-header">
                         <figure class="about-avatar">
-                            <img src="/images/profile.jpeg" alt="Jared Hooper">
+                            <img src="/images/profile.jpeg" alt={t(locale, 'about.imgAltProfile')}>
                         </figure>
                         <div>
-                            <h1 class="title is-3" style="margin-bottom: 0.25rem;">Jared Hooper</h1>
-                            <p class="subtitle is-6 is-muted" style="margin-bottom: 0;">Software Engineer at Outreach</p>
+                            <h1 class="title is-3" style="margin-bottom: 0.25rem;">{t(locale, 'about.name')}</h1>
+                            <p class="subtitle is-6 is-muted" style="margin-bottom: 0;">{t(locale, 'about.jobTitle')}</p>
                         </div>
                     </div>
 
                     <div class="divider mt-4 mb-5"></div>
 
                     <div class="content is-medium" style="color: var(--fresh-muted);">
-                        <p>
-                            Software engineer based in Seattle, WA. I work at
-                            <a href="https://www.outreach.io" target="_blank" rel="noopener" style="color: var(--fresh-primary);">Outreach</a>
-                            and spend my free time building tools, agents, and
-                            infrastructure at the intersection of software engineering
-                            and AI.
-                        </p>
-                        <p>
-                            University of New Hampshire alum. When I'm not writing code,
-                            I'm probably hanging out with Bigsby — my dog and loyal co-pilot.
-                        </p>
+                        <p set:html={t(locale, 'about.bio1')} />
+                        <p>{t(locale, 'about.bio2')}</p>
                     </div>
 
                     {loggedIn && (
@@ -57,19 +54,19 @@ const loggedIn = false;
                     )}
 
                     <div class="mt-6">
-                        <h2 class="title is-4">Meet Bigsby</h2>
+                        <h2 class="title is-4">{t(locale, 'about.meetBigsby')}</h2>
                         <div class="columns is-variable is-4 mt-3">
                             <div class="column is-6">
                                 <figure class="image is-4by3">
-                                    <img class="about-img" src="/images/bigs.jpeg" alt="Bigsby the dog">
+                                    <img class="about-img" src="/images/bigs.jpeg" alt={t(locale, 'about.imgAltBigsby')}>
                                 </figure>
-                                <p class="has-text-centered has-text-fresh-muted mt-2" style="font-size: 0.9rem;">The best boy.</p>
+                                <p class="has-text-centered has-text-fresh-muted mt-2" style="font-size: 0.9rem;">{t(locale, 'about.captionBigsby')}</p>
                             </div>
                             <div class="column is-6">
                                 <figure class="image is-4by3">
-                                    <img class="about-img" src="/images/me-and-bigs.jpeg" alt="Jared and Bigsby">
+                                    <img class="about-img" src="/images/me-and-bigs.jpeg" alt={t(locale, 'about.imgAltTogether')}>
                                 </figure>
-                                <p class="has-text-centered has-text-fresh-muted mt-2" style="font-size: 0.9rem;">Partners in crime.</p>
+                                <p class="has-text-centered has-text-fresh-muted mt-2" style="font-size: 0.9rem;">{t(locale, 'about.captionTogether')}</p>
                             </div>
                         </div>
                     </div>
