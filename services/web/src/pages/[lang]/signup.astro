@@ -1,12 +1,37 @@
 ---
-import Base from '../layouts/Base.astro';
-import Topbar from '../components/Topbar.astro';
-import { proxyToPortal } from '../lib/proxy';
+import Base from '../../layouts/Base.astro';
+import Topbar from '../../components/Topbar.astro';
+import { proxyToPortal } from '../../lib/proxy';
+import { isLocale, type Locale } from '../../i18n/config';
+import { t, localePath } from '../../i18n/utils';
+
+const { lang } = Astro.params;
+if (!lang || !isLocale(lang)) return Astro.redirect('/en/signup', 302);
+const locale = lang as Locale;
 
 // Handle POST in frontmatter — returning a Response short-circuits the
 // template rendering, so the portal's 303 redirect reaches the browser.
 if (Astro.request.method === 'POST') {
-  return proxyToPortal(Astro.request, '/signup');
+  const resp = await proxyToPortal(Astro.request, '/signup');
+
+  // Rewrite portal redirects to locale-prefixed paths.
+  if (resp.status >= 300 && resp.status < 400) {
+    const location = resp.headers.get('Location') || '';
+    if (location === '/dashboard' || location.endsWith('/dashboard')) {
+      return new Response(null, {
+        status: resp.status,
+        headers: { ...Object.fromEntries(resp.headers), Location: localePath(locale, '/dashboard') },
+      });
+    }
+    if (location.startsWith('/signup')) {
+      const search = location.includes('?') ? location.substring(location.indexOf('?')) : '';
+      return new Response(null, {
+        status: resp.status,
+        headers: { ...Object.fromEntries(resp.headers), Location: localePath(locale, '/signup') + search },
+      });
+    }
+  }
+  return resp;
 }
 
 export function POST() {
@@ -18,13 +43,13 @@ export function POST() {
 const error = Astro.url.searchParams.get('error') || '';
 ---
 
-<Base title="Sign Up">
-    <Topbar slot="topbar" />
+<Base title={t(locale, 'signup.title')} lang={locale}>
+    <Topbar slot="topbar" locale={locale} />
 
     <section class="auth-page">
         <div class="auth-container">
-            <h1 class="title is-4 has-text-centered" style="font-family: 'Montserrat', sans-serif;">Create Account</h1>
-            <p class="subtitle is-6 is-muted has-text-centered mb-5">Join Hooper Development</p>
+            <h1 class="title is-4 has-text-centered" style="font-family: 'Montserrat', sans-serif;">{t(locale, 'signup.heading')}</h1>
+            <p class="subtitle is-6 is-muted has-text-centered mb-5">{t(locale, 'signup.subtitle')}</p>
 
             <div class="box auth-card">
                 {error && (
@@ -33,37 +58,37 @@ const error = Astro.url.searchParams.get('error') || '';
                         {error}
                     </div>
                 )}
-                <form action="/signup" method="POST">
+                <form action={localePath(locale, '/signup')} method="POST">
                     <div class="field">
-                        <label class="label" for="username" style="font-size: 0.9rem;">Username</label>
+                        <label class="label" for="username" style="font-size: 0.9rem;">{t(locale, 'signup.usernameLabel')}</label>
                         <div class="control has-icons-left">
-                            <input class="input" type="text" id="username" name="username" placeholder="jsmith" required>
+                            <input class="input" type="text" id="username" name="username" placeholder={t(locale, 'signup.usernamePlaceholder')} required>
                             <span class="icon is-small is-left" style="color: var(--fresh-muted);"><i class="fas fa-at"></i></span>
                         </div>
                     </div>
                     <div class="field">
-                        <label class="label" for="name" style="font-size: 0.9rem;">Full Name</label>
+                        <label class="label" for="name" style="font-size: 0.9rem;">{t(locale, 'signup.nameLabel')}</label>
                         <div class="control has-icons-left">
-                            <input class="input" type="text" id="name" name="name" placeholder="John Smith">
+                            <input class="input" type="text" id="name" name="name" placeholder={t(locale, 'signup.namePlaceholder')}>
                             <span class="icon is-small is-left" style="color: var(--fresh-muted);"><i class="fas fa-user"></i></span>
                         </div>
                     </div>
                     <div class="field">
-                        <label class="label" for="email" style="font-size: 0.9rem;">Email</label>
+                        <label class="label" for="email" style="font-size: 0.9rem;">{t(locale, 'signup.emailLabel')}</label>
                         <div class="control has-icons-left">
-                            <input class="input" type="email" id="email" name="email" placeholder="you@example.com" required>
+                            <input class="input" type="email" id="email" name="email" placeholder={t(locale, 'signup.emailPlaceholder')} required>
                             <span class="icon is-small is-left" style="color: var(--fresh-muted);"><i class="fas fa-envelope"></i></span>
                         </div>
                     </div>
                     <div class="field">
-                        <label class="label" for="phone" style="font-size: 0.9rem;">Phone Number</label>
+                        <label class="label" for="phone" style="font-size: 0.9rem;">{t(locale, 'signup.phoneLabel')}</label>
                         <div class="control has-icons-left">
-                            <input class="input" type="tel" id="phone" name="phone" placeholder="(555) 123-4567" required>
+                            <input class="input" type="tel" id="phone" name="phone" placeholder={t(locale, 'signup.phonePlaceholder')} required>
                             <span class="icon is-small is-left" style="color: var(--fresh-muted);"><i class="fas fa-phone"></i></span>
                         </div>
                     </div>
                     <div class="field">
-                        <label class="label" for="password" style="font-size: 0.9rem;">Password</label>
+                        <label class="label" for="password" style="font-size: 0.9rem;">{t(locale, 'signup.passwordLabel')}</label>
                         <div class="control has-icons-left">
                             <input class="input" type="password" id="password" name="password" required>
                             <span class="icon is-small is-left" style="color: var(--fresh-muted);"><i class="fas fa-lock"></i></span>
@@ -71,13 +96,13 @@ const error = Astro.url.searchParams.get('error') || '';
                     </div>
                     <div class="field mt-5">
                         <button class="button primary-btn is-rounded is-fullwidth cta" type="submit">
-                            Create Account
+                            {t(locale, 'signup.submit')}
                         </button>
                     </div>
                 </form>
             </div>
             <p class="has-text-centered has-text-fresh-muted mt-4" style="font-size: 0.9rem;">
-                Already have an account? <a href="/login" style="color: var(--fresh-primary);">Login</a>
+                {t(locale, 'signup.hasAccount')} <a href={localePath(locale, '/login')} style="color: var(--fresh-primary);">{t(locale, 'signup.loginLink')}</a>
             </p>
         </div>
     </section>

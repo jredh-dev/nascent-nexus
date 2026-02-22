@@ -1,19 +1,24 @@
 ---
-import Base from '../layouts/Base.astro';
-import Topbar from '../components/Topbar.astro';
+import Base from '../../layouts/Base.astro';
+import Topbar from '../../components/Topbar.astro';
 import { createConnectTransport } from '@connectrpc/connect-web';
 import { createClient } from '@connectrpc/connect';
-import { AuthService } from '../gen/portal/v1/auth_pb.js';
-import { getPortalUrl } from '../lib/proxy';
+import { AuthService } from '../../gen/portal/v1/auth_pb.js';
+import { getPortalUrl } from '../../lib/proxy';
+import { isLocale, type Locale } from '../../i18n/config';
+import { t, localePath } from '../../i18n/utils';
+
+const { lang } = Astro.params;
+if (!lang || !isLocale(lang)) return Astro.redirect('/en/dashboard', 302);
+const locale = lang as Locale;
 
 // Redirect to login if no session cookie present.
 const sessionCookie = Astro.cookies.get('session');
 if (!sessionCookie?.value) {
-    return Astro.redirect('/login');
+    return Astro.redirect(localePath(locale, '/login'));
 }
 
 // Call GetSession via Connect RPC, forwarding the session cookie.
-// In SSR, we talk directly to the portal backend (bypasses Astro middleware).
 const portalUrl = getPortalUrl();
 
 const transport = createConnectTransport({
@@ -52,79 +57,64 @@ try {
     }));
 } catch (err) {
     // Session invalid — redirect to login.
-    return Astro.redirect('/login');
-}
-
-function fmtDate(iso: string): string {
-    if (!iso) return '—';
-    try {
-        return new Date(iso).toLocaleDateString('en-US', {
-            month: 'short', day: 'numeric', year: 'numeric',
-        });
-    } catch { return iso; }
-}
-
-function fmtDateTime(iso: string): string {
-    if (!iso) return '—';
-    try {
-        return new Date(iso).toLocaleDateString('en-US', {
-            month: 'short', day: 'numeric', year: 'numeric',
-            hour: 'numeric', minute: '2-digit',
-        });
-    } catch { return iso; }
+    return Astro.redirect(localePath(locale, '/login'));
 }
 ---
 
-<Base title="Dashboard">
-    <Topbar slot="topbar" />
+<Base title={t(locale, 'dashboard.title')} lang={locale}>
+    <Topbar slot="topbar" locale={locale} />
 
     <section class="section">
         <div class="container">
             <div class="columns is-centered">
                 <div class="column is-10">
-                    <h1 class="title is-3" style="font-family: 'Montserrat', sans-serif;">Dashboard</h1>
-                    <p class="subtitle is-6 is-muted">Welcome back, {user.name}</p>
+                    <h1 class="title is-3" style="font-family: 'Montserrat', sans-serif;">{t(locale, 'dashboard.heading')}</h1>
+                    <p class="subtitle is-6 is-muted">{t(locale, 'dashboard.welcome', { name: user.name })}</p>
                     <div class="divider mb-5"></div>
 
                     <div class="columns">
                         <!-- Profile -->
                         <div class="column is-4">
                             <div class="box" style="border-radius: 8px; border: none; box-shadow: 0 2px 12px rgba(0,0,0,0.06);">
-                                <h2 class="title is-5 mb-4">Profile</h2>
+                                <h2 class="title is-5 mb-4">{t(locale, 'dashboard.profile')}</h2>
                                 <table class="table is-fullwidth is-narrow">
                                     <tbody>
                                         {user.username && (
                                             <tr>
-                                                <th style="color: var(--fresh-dark);">Username</th>
+                                                <th style="color: var(--fresh-dark);">{t(locale, 'dashboard.username')}</th>
                                                 <td style="color: var(--fresh-muted);">{user.username}</td>
                                             </tr>
                                         )}
                                         <tr>
-                                            <th style="color: var(--fresh-dark);">Email</th>
+                                            <th style="color: var(--fresh-dark);">{t(locale, 'dashboard.email')}</th>
                                             <td style="color: var(--fresh-muted);">{user.email}</td>
                                         </tr>
                                         {user.phone && (
                                             <tr>
-                                                <th style="color: var(--fresh-dark);">Phone</th>
+                                                <th style="color: var(--fresh-dark);">{t(locale, 'dashboard.phone')}</th>
                                                 <td style="color: var(--fresh-muted);">{user.phone}</td>
                                             </tr>
                                         )}
                                         {user.name && (
                                             <tr>
-                                                <th style="color: var(--fresh-dark);">Name</th>
+                                                <th style="color: var(--fresh-dark);">{t(locale, 'dashboard.name')}</th>
                                                 <td style="color: var(--fresh-muted);">{user.name}</td>
                                             </tr>
                                         )}
                                         {user.createdAt && (
                                             <tr>
-                                                <th style="color: var(--fresh-dark);">Member since</th>
-                                                <td style="color: var(--fresh-muted);">{fmtDate(user.createdAt)}</td>
+                                                <th style="color: var(--fresh-dark);">{t(locale, 'dashboard.memberSince')}</th>
+                                                <td style="color: var(--fresh-muted);">
+                                                    <time data-iso={user.createdAt} data-fmt="date">{user.createdAt}</time>
+                                                </td>
                                             </tr>
                                         )}
                                         {user.lastLogin && (
                                             <tr>
-                                                <th style="color: var(--fresh-dark);">Last login</th>
-                                                <td style="color: var(--fresh-muted);">{fmtDateTime(user.lastLogin)}</td>
+                                                <th style="color: var(--fresh-dark);">{t(locale, 'dashboard.lastLogin')}</th>
+                                                <td style="color: var(--fresh-muted);">
+                                                    <time data-iso={user.lastLogin} data-fmt="datetime">{user.lastLogin}</time>
+                                                </td>
                                             </tr>
                                         )}
                                     </tbody>
@@ -132,7 +122,7 @@ function fmtDateTime(iso: string): string {
                                 <div class="mt-4">
                                     <a class="button secondary-btn btn-outlined is-rounded is-fullwidth" href="/logout">
                                         <span class="icon"><i class="fas fa-right-from-bracket"></i></span>
-                                        <span>Logout</span>
+                                        <span>{t(locale, 'dashboard.logout')}</span>
                                     </a>
                                 </div>
                             </div>
@@ -141,16 +131,16 @@ function fmtDateTime(iso: string): string {
                         <!-- Sessions -->
                         <div class="column is-8">
                             <div class="box" style="border-radius: 8px; border: none; box-shadow: 0 2px 12px rgba(0,0,0,0.06);">
-                                <h2 class="title is-5 mb-4">Active Sessions</h2>
+                                <h2 class="title is-5 mb-4">{t(locale, 'dashboard.sessions')}</h2>
                                 {sessions.length > 0 ? (
                                     <div class="table-container">
                                         <table class="table is-fullwidth is-striped is-hoverable">
                                             <thead>
                                                 <tr>
-                                                    <th>IP Address</th>
-                                                    <th>User Agent</th>
-                                                    <th>Created</th>
-                                                    <th>Expires</th>
+                                                    <th>{t(locale, 'dashboard.sessionIp')}</th>
+                                                    <th>{t(locale, 'dashboard.sessionAgent')}</th>
+                                                    <th>{t(locale, 'dashboard.sessionCreated')}</th>
+                                                    <th>{t(locale, 'dashboard.sessionExpires')}</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
@@ -158,15 +148,19 @@ function fmtDateTime(iso: string): string {
                                                     <tr>
                                                         <td>{session.ipAddress}</td>
                                                         <td class="is-size-7 has-text-fresh-muted">{session.userAgent}</td>
-                                                        <td style="color: var(--fresh-muted);">{fmtDateTime(session.createdAt)}</td>
-                                                        <td style="color: var(--fresh-muted);">{fmtDateTime(session.expiresAt)}</td>
+                                                        <td style="color: var(--fresh-muted);">
+                                                            <time data-iso={session.createdAt} data-fmt="datetime">{session.createdAt}</time>
+                                                        </td>
+                                                        <td style="color: var(--fresh-muted);">
+                                                            <time data-iso={session.expiresAt} data-fmt="datetime">{session.expiresAt}</time>
+                                                        </td>
                                                     </tr>
                                                 ))}
                                             </tbody>
                                         </table>
                                     </div>
                                 ) : (
-                                    <p class="has-text-fresh-muted">No active sessions.</p>
+                                    <p class="has-text-fresh-muted">{t(locale, 'dashboard.noSessions')}</p>
                                 )}
                             </div>
                         </div>
@@ -176,3 +170,25 @@ function fmtDateTime(iso: string): string {
         </div>
     </section>
 </Base>
+
+<script>
+// Client-side timezone-aware date formatting.
+// Replaces SSR-rendered ISO strings with the user's local timezone + locale.
+document.querySelectorAll('time[data-iso]').forEach((el) => {
+    const iso = el.getAttribute('data-iso');
+    if (!iso) return;
+    try {
+        const date = new Date(iso);
+        if (isNaN(date.getTime())) return;
+
+        const fmt = el.getAttribute('data-fmt');
+        const opts: Intl.DateTimeFormatOptions = fmt === 'date'
+            ? { month: 'short', day: 'numeric', year: 'numeric' }
+            : { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' };
+
+        el.textContent = new Intl.DateTimeFormat(undefined, opts).format(date);
+    } catch {
+        // Leave the ISO string as-is if formatting fails.
+    }
+});
+</script>
