@@ -42,7 +42,7 @@ test.describe('Login cycle', () => {
     await expect(page.locator('text=demo@demo.com')).toBeVisible();
 
     // Should have at least one active session.
-    await expect(page.locator('table')).toBeVisible();
+    await expect(page.locator('table').first()).toBeVisible();
   });
 
   test('logout redirects to home', async ({ page }) => {
